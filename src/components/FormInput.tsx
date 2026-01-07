@@ -2,9 +2,9 @@ import React from "react";
 
 interface Props {
   label: string;
-  value: any;
+  value: string | boolean | File | File[] | null | undefined;
   required?: boolean;
-  onChange: (val: any) => void;
+  onChange: (val: string | boolean | File | File[] | null) => void;
   type?: string;
   options?: string[];
   multiple?: boolean;
@@ -31,9 +31,10 @@ export const FormInput: React.FC<Props> = ({
         <input
           className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           type="email"
-          value={value || ""}
+          value={typeof value === "string" ? value : ""}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Enter email address"
+          required={required}
         />
       </div>
     );
@@ -48,10 +49,11 @@ export const FormInput: React.FC<Props> = ({
         </label>
         <select
           className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={value || ""}
+          value={typeof value === "string" ? value : ""}
           onChange={(e) => onChange(e.target.value)}
+          required={required}
         >
-          <option value="" disabled>Select...</option>
+          <option value="">Select...</option>
           {options?.map((o) => (
             <option key={o} value={o}>
               {o}
@@ -76,14 +78,13 @@ export const FormInput: React.FC<Props> = ({
           multiple={multiple}
           onChange={(e) => {
             if (multiple) {
-              // For multiple files, pass the FileList as an array
               onChange(e.target.files ? Array.from(e.target.files) : []);
             } else {
-              // For single file, pass the first file
-              onChange(e.target.files?.[0]);
+              onChange(e.target.files?.[0] || null);
             }
           }}
           accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+          required={required}
         />
         {value && (
           <div className="mt-2 text-sm text-gray-600">
@@ -96,7 +97,7 @@ export const FormInput: React.FC<Props> = ({
                   ))}
                 </ul>
               </div>
-            ) : value?.name ? (
+            ) : value instanceof File ? (
               <p>Selected: {value.name}</p>
             ) : null}
           </div>
@@ -112,9 +113,10 @@ export const FormInput: React.FC<Props> = ({
         <label className="flex items-center space-x-2 cursor-pointer">
           <input
             type="checkbox"
-            checked={value || false}
+            checked={typeof value === "boolean" ? value : false}
             onChange={(e) => onChange(e.target.checked)}
             className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+            required={required}
           />
           <span className="font-medium">
             {label} {required && <span className="text-red-600">*</span>}
@@ -133,10 +135,11 @@ export const FormInput: React.FC<Props> = ({
         </label>
         <textarea
           className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={value || ""}
+          value={typeof value === "string" ? value : ""}
           onChange={(e) => onChange(e.target.value)}
           rows={4}
           placeholder="Enter additional details..."
+          required={required}
         />
       </div>
     );
@@ -151,13 +154,11 @@ export const FormInput: React.FC<Props> = ({
       <input
         className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
         type="text"
-        value={value || ""}
+        value={typeof value === "string" ? value : ""}
         onChange={(e) => {
           const newValue = e.target.value;
           
-          // Apply validation if specified
           if (validation === "numbers") {
-            // Only allow numbers
             if (/^\d*$/.test(newValue)) {
               onChange(newValue);
             }
@@ -166,6 +167,7 @@ export const FormInput: React.FC<Props> = ({
           }
         }}
         placeholder={validation === "numbers" ? "Enter numbers only" : `Enter ${label.toLowerCase()}`}
+        required={required}
       />
       {validation === "numbers" && (
         <p className="text-xs text-gray-500 mt-1">Numbers only</p>
